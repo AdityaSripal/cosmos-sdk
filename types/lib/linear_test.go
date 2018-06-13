@@ -30,81 +30,84 @@ func defaultComponents(key sdk.StoreKey) (sdk.Context, *wire.Codec) {
 	return ctx, cdc
 }
 
-func TestListMapper(t *testing.T) {
-	key := sdk.NewKVStoreKey("list")
+func TestList(t *testing.T) {
+	key := sdk.NewKVStoreKey("test")
 	ctx, cdc := defaultComponents(key)
-	lm := NewListMapper(cdc, key, "data")
+	store := ctx.KVStore(key)
+	lm := NewList(cdc, store)
 
 	val := S{1, true}
 	var res S
 
-	lm.Push(ctx, val)
-	assert.Equal(t, uint64(1), lm.Len(ctx))
-	lm.Get(ctx, uint64(0), &res)
+	lm.Push(val)
+	assert.Equal(t, uint64(1), lm.Len())
+	lm.Get(uint64(0), &res)
 	assert.Equal(t, val, res)
 
 	val = S{2, false}
-	lm.Set(ctx, uint64(0), val)
-	lm.Get(ctx, uint64(0), &res)
+	lm.Set(uint64(0), val)
+	lm.Get(uint64(0), &res)
 	assert.Equal(t, val, res)
 
 	val = S{100, false}
-	lm.Push(ctx, val)
-	assert.Equal(t, uint64(2), lm.Len(ctx))
-	lm.Get(ctx, uint64(1), &res)
+	lm.Push(val)
+	assert.Equal(t, uint64(2), lm.Len())
+	lm.Get(uint64(1), &res)
 	assert.Equal(t, val, res)
 
-	lm.Delete(ctx, uint64(1))
-	assert.Equal(t, uint64(2), lm.Len(ctx))
+	lm.Delete(uint64(1))
+	assert.Equal(t, uint64(2), lm.Len())
 
-	lm.IterateRead(ctx, &res, func(ctx sdk.Context, index uint64) (brk bool) {
+	lm.Iterate(&res, func(index uint64) (brk bool) {
 		var temp S
-		lm.Get(ctx, index, &temp)
+		lm.Get(index, &temp)
 		assert.Equal(t, temp, res)
 
 		assert.True(t, index != 1)
 		return
 	})
 
-	lm.IterateWrite(ctx, &res, func(ctx sdk.Context, index uint64) (brk bool) {
-		lm.Set(ctx, index, S{res.I + 1, !res.B})
+	lm.Iterate(&res, func(index uint64) (brk bool) {
+		lm.Set(index, S{res.I + 1, !res.B})
 		return
 	})
 
-	lm.Get(ctx, uint64(0), &res)
+	lm.Get(uint64(0), &res)
 	assert.Equal(t, S{3, true}, res)
 }
 
-func TestQueueMapper(t *testing.T) {
-	key := sdk.NewKVStoreKey("queue")
+func TestQueue(t *testing.T) {
+	key := sdk.NewKVStoreKey("test")
 	ctx, cdc := defaultComponents(key)
-	qm := NewQueueMapper(cdc, key, "data")
+	store := ctx.KVStore(key)
+
+	qm := NewQueue(cdc, store)
 
 	val := S{1, true}
 	var res S
 
-	qm.Push(ctx, val)
-	qm.Peek(ctx, &res)
+	qm.Push(val)
+	qm.Peek(&res)
 	assert.Equal(t, val, res)
 
-	qm.Pop(ctx)
-	empty := qm.IsEmpty(ctx)
+	qm.Pop()
+	empty := qm.IsEmpty()
 
 	assert.True(t, empty)
-	assert.NotNil(t, qm.Peek(ctx, &res))
+	assert.NotNil(t, qm.Peek(&res))
 
-	qm.Push(ctx, S{1, true})
-	qm.Push(ctx, S{2, true})
-	qm.Push(ctx, S{3, true})
-	qm.Flush(ctx, &res, func(ctx sdk.Context) (brk bool) {
+	qm.Push(S{1, true})
+	qm.Push(S{2, true})
+	qm.Push(S{3, true})
+	qm.Flush(&res, func() (brk bool) {
 		if res.I == 3 {
 			brk = true
 		}
 		return
 	})
 
-	assert.False(t, qm.IsEmpty(ctx))
+	assert.False(t, qm.IsEmpty())
 
-	qm.Pop(ctx)
-	assert.True(t, qm.IsEmpty(ctx))
+	qm.Pop()
+	assert.True(t, qm.IsEmpty())
 }

@@ -19,5 +19,10 @@ func (dsa dbStoreAdapter) CacheWrap() CacheWrap {
 	return NewCacheKVStore(dsa)
 }
 
+// Implements KVStore
+func (dsa dbStoreAdapter) Prefix(prefix string) KVStore {
+	return prefixStore{dsa, []byte(prefix)}
+}
+
 // dbm.DB implements KVStore so we can CacheKVStore it.
 var _ KVStore = dbStoreAdapter{dbm.DB(nil)}

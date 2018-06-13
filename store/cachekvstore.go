@@ -80,6 +80,11 @@ func (ci *cacheKVStore) Delete(key []byte) {
 	ci.setCacheValue(key, nil, true, true)
 }
 
+// Implements KVStore
+func (ci *cacheKVStore) Prefix(prefix string) KVStore {
+	return prefixStore{ci, []byte(prefix)}
+}
+
 // Implements CacheKVStore.
 func (ci *cacheKVStore) Write() {
 	ci.mtx.Lock()

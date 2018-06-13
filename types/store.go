@@ -103,6 +103,9 @@ type KVStore interface {
 	// Delete deletes the key. Panics on nil key.
 	Delete(key []byte)
 
+	// Prefix applied keys with the argument
+	Prefix(prefix string) KVStore
+
 	// Iterator over a domain of keys in ascending order. End is exclusive.
 	// Start must be less than end, or the Iterator is invalid.
 	// CONTRACT: No writes may happen within a domain while an iterator exists over it.
@@ -201,6 +204,7 @@ const (
 	StoreTypeMulti StoreType = iota
 	StoreTypeDB
 	StoreTypeIAVL
+	StoreTypePrefix
 )
 
 //----------------------------------------
@@ -264,3 +268,5 @@ func PrefixEndBytes(prefix []byte) []byte {
 
 // key-value result for iterator queries
 type KVPair cmn.KVPair
+
+//----------------------------------------
