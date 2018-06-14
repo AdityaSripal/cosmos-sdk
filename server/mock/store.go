@@ -95,6 +95,10 @@ func (kv kvStore) Delete(key []byte) {
 	delete(kv.store, string(key))
 }
 
+func (kv kvStore) Prefix(prefix string) sdk.KVStore {
+	panic("not implemented")
+}
+
 func (kv kvStore) Iterator(start, end []byte) sdk.Iterator {
 	panic("not implemented")
 }
