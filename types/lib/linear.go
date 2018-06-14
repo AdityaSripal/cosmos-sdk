@@ -58,10 +58,12 @@ func NewList(cdc *wire.Codec, store sdk.KVStore) List {
 	}
 }
 
+// Key for the length of the list
 func LengthKey() []byte {
 	return []byte{0x00}
 }
 
+// Key for the elements of the list
 func ElemKey(index uint64) []byte {
 	return append([]byte{0x01}, []byte(fmt.Sprintf("%020d", index))...)
 }
@@ -167,6 +169,7 @@ func NewQueue(cdc *wire.Codec, store sdk.KVStore) Queue {
 	}
 }
 
+// Key for the top element position in the queue
 func TopKey() []byte {
 	return []byte{0x02}
 }
